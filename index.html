@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Metrics Dashboard</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 5px; text-align: left; }
+        th { background: #eee; }
+    </style>
+</head>
+<body>
+<h1>Metrics Dashboard</h1>
+<button onclick="fetchProjects()">🔄 Refresh Projects</button>
+
+<h2>Projects</h2>
+<table id="projects"></table>
+
+<h2>Repositories (для выбранного проекта)</h2>
+<table id="repos"></table>
+
+<h2>Developers (для выбранного репозитория)</h2>
+<table id="developers"></table>
+
+<script>
+    const API_BASE = 'http://localhost:8080/api';
+
+    async function fetchProjects() {
+        const res = await fetch(`${API_BASE}/projects`);
+        const projects = await res.json();
+        renderTable('projects', projects);
+
+        if (projects.length > 0) {
+            fetchRepositories(projects[0].name);
+        }
+    }
+
+    async function fetchRepositories(projectName) {
+        const res = await fetch(`${API_BASE}/projects/${projectName}/repos`);
+        const repos = await res.json();
+        renderTable('repos', repos);
+
+        if (repos.length > 0) {
+            fetchDevelopers(projectName, repos[0].name);
+        }
+    }
+
+    async function fetchDevelopers(projectName, repoName) {
+        const res = await fetch(`${API_BASE}/projects/${projectName}/repos/${repoName}/developers`);
+        const developers = await res.json();
+
+        // Получаем статистику по каждому разработчику
+        const developersStats = await Promise.all(developers.map(async dev => {
+            try {
+                const statsRes = await fetch(`${API_BASE}/projects/${projectName}/repos/${repoName}/developers/${encodeURIComponent(dev.email)}`);
+                if (!statsRes.ok) return dev;
+                const stats = await statsRes.json();
+                return {...dev, ...stats};
+            } catch (e) {
+                return dev;
+            }
+        }));
+
+        renderTable('developers', developersStats);
+    }
+
+    function renderTable(id, data) {
+        const table = document.getElementById(id);
+        if (!data || data.length === 0) {
+            table.innerHTML = '<tr><td>No data</td></tr>';
+            return;
+        }
+        const cols = Object.keys(data[0]);
+        let html = '<tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+        html += data.map(row => '<tr>' + cols.map(c => `<td>${row[c]}</td>`).join('') + '</tr>').join('');
+        table.innerHTML = html;
+    }
+
+    // Авто-загрузка при старте
+    fetchProjects();
+</script>
+</body>
+</html>
