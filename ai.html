@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажёр: Принятие решений (Тындекс)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Nunito', sans-serif; 
+        }
+        body { 
+            background: #F8FCFF; 
+            color: #333; 
+            padding: 1rem; 
+        }
+        .container { 
+            max-width: 960px; 
+            margin: 0 auto; 
+        }
+
+        /* === HEADER === */
+        header { 
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white; 
+            padding: 1rem;
+            border-radius: 16px;
+            margin-bottom: 1.25rem;
+            display: flex; 
+            flex-wrap: wrap;
+            align-items: center; 
+            justify-content: space-between;
+            gap: 0.75rem; 
+            box-shadow: 0 4px 16px rgba(106, 17, 203, 0.15);
+            position: relative;
+        }
+
+        /* Левая часть: кнопка + заголовок */
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .back-to-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4285f4;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .back-to-home:hover {
+            background: rgba(66, 133, 244, 0.1);
+            color: #2b6aff;
+            text-decoration: underline;
+        }
+        .back-to-home i { font-size: 1rem; }
+
+        .main-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+        .main-title i { font-size: 1.5rem; }
+        .main-title h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .main-title small {
+            display: block;
+            font-weight: 400;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Правая часть: прогресс + сброс */
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+            width: 100%;
+        }
+        @media (min-width: 600px) {
+            .header-right {
+                width: auto;
+                flex-direction: row;
+                align-items: center;
+                gap: 0.75rem;
+            }
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            width: 100%;
+            max-width: 200px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        .reset-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        .reset-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* === СПИСОК ЗАДАНИЙ === */
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        @media (min-width: 600px) {
+            .tasks-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1.25rem;
+            }
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 1px solid #eef4ff;
+            position: relative;
+        }
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(106, 17, 203, 0.1);
+            border-color: #d0d8ff;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: white;
+            z-index: 2;
+        }
+        .badge-correct { background: #2e7d32; }
+        .badge-partial { background: #f57f17; }
+        .badge-incorrect { background: #c62828; }
+
+        .card-header {
+            background: linear-gradient(135deg, #f0f4ff, #e6e9ff);
+            padding: 0.875rem 1rem;
+            font-weight: 600;
+            color: #6a11cb;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-body {
+            padding: 1rem;
+        }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        .price-change.pos { color: #2e7d32; }
+        .price-change.neg { color: #c62828; }
+
+        /* === ДЕТАЛЬНЫЙ ПРОСМОТР === */
+        #detail-view { display: none; }
+        .detail-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .detail-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 1.25rem;
+            position: relative;
+        }
+        .btn-back {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        .detail-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 0;
+        }
+        .detail-body { 
+            padding: 1.5rem 1rem;
+        }
+        @media (min-width: 600px) {
+            .detail-body { padding: 1.75rem 2rem; }
+        }
+
+        .news-box {
+            background: #f0f4ff;
+            border-left: 4px solid #6a11cb;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .decision-section { margin: 1.25rem 0; }
+
+        .decision-box {
+            background: #fff8e1;
+            border: 2px solid #ffd54f;
+            border-radius: 14px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .decision-box h3 {
+            color: #5d4037;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        @media (min-width: 600px) {
+            .options {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .option-btn {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+
+        .option-btn {
+            padding: 12px;
+            border: 2px solid #6a11cb;
+            background: white;
+            color: #6a11cb;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .option-btn:hover:not(:disabled) {
+            background: #f0f4ff;
+            transform: scale(1.02);
+        }
+        .option-btn.selected {
+            background: #6a11cb;
+            color: white;
+            border-color: #6a11cb;
+            transform: scale(1.03);
+        }
+        .option-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* История ответа */
+        .history-box {
+            background: #f8f9ff;
+            border-radius: 14px;
+            padding: 1.25rem;
+            margin: 1.25rem 0;
+        }
+        .history-box h3 {
+            color: #6a11cb;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .result-icon {
+            font-size: 2rem;
+            margin: 0.5rem 0;
+        }
+        .result-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        .correct .result-icon { color: #2e7d32; }
+        .correct .result-title { color: #2e7d32; }
+        .incorrect .result-icon { color: #c62828; }
+        .incorrect .result-title { color: #c62828; }
+        .partial .result-icon { color: #f57f17; }
+        .partial .result-title { color: #f57f17; }
+
+        .analysis-box {
+            background: #f0f9ff;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1rem 0;
+            line-height: 1.5;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        .analysis-box h4 {
+            color: #0d47a1;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        /* Кнопки навигации */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        @media (min-width: 600px) {
+            .btn-group {
+                flex-direction: row;
+                gap: 0.75rem;
+            }
+            .btn {
+                flex: 1;
+            }
+        }
+
+        .btn {
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-size: 1rem;
+        }
+        .btn-outline {
+            border: 2px solid #6a11cb;
+            color: #6a11cb;
+            background: transparent;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            box-shadow: 0 4px 12px rgba(106, 17, 203, 0.25);
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(106, 17, 203, 0.35);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Маленькие улучшения для мобилок */
+        @media (max-width: 480px) {
+            body { padding: 0.75rem; }
+            header { border-radius: 12px; padding: 0.875rem; }
+            .main-title h1 { font-size: 1.3rem; }
+            .card-title { font-size: 0.95rem; }
+            .news-box, .analysis-box, .history-box { padding: 0.875rem; }
+            .decision-box { padding: 1rem; }
+            .btn { padding: 10px; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <a href="index.html" class="back-to-home">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад на главную
+                </a>
+                <div class="main-title">
+                    <i class="fas fa-brain"></i>
+                    <div>
+                        <h1>Принятие решений</h1>
+                        <small>Компания: Тындекс</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <span id="progressInfo" style="font-size:0.85rem;color:white;"></span>
+                    <button class="reset-btn" id="btnReset" title="Сбросить прогресс">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div id="list-view">
+            <div class="tasks-grid" id="tasksContainer"></div>
+        </div>
+
+        <div id="detail-view" class="detail-content">
+            <div class="detail-header">
+                <button class="btn-back" id="btnBackFromDetail">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 id="detailTitle">Задание #1</h2>
+            </div>
+            <div class="detail-body">
+                <div class="news-box" id="detailNews"></div>
+
+                <div class="decision-section" id="decisionSection">
+                    <!-- Будет заменён динамически -->
+                </div>
+
+                <div class="btn-group">
+                    <div class="btn btn-outline" id="btnPrevDetail">← Назад</div>
+                    <div class="btn btn-primary" id="btnSubmit" style="display:none;">Проверить</div>
+                    <div class="btn btn-outline" id="btnNextDetail" style="display:none;">Следующее →</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ... (весь JS-код из предыдущей версии — без изменений)
+        // === Здесь вставляем ТОТ ЖЕ САМЫЙ JS, что был выше (от const tasks = [...] до renderTaskList(); updateUI();) ===
+        // Для краткости не дублирую — он полностью совместим и работает как раньше
+        // (в реальном файле просто скопируйте JS из предыдущего ответа целиком сюда)
+        
+        const tasks = [
+            {
+                id: 1,
+                headline: "Тындекс анонсирует релиз YandexGPT-4 с поддержкой русскоязычной юриспруденции",
+                news: "Компания представила новое поколение языковой модели, адаптированной под российское законодательство. Первые контракты уже подписаны с тремя федеральными судами. Эксперты отмечают прорыв в применении ИИ в госсекторе.",
+                newPrice: 820.0,
+                changePercent: 17.1,
+                date: "2025-10-12",
+                correctAction: "buy",
+                analysis: {
+                    buy: { correct: true, title: "✅ Верно!", text: "Контракты с госсектором — долгосрочный драйвер роста. Модель YandexGPT-4 даёт конкурентное преимущество в нишевом сегменте (юридические ИИ-решения). Рынок ещё не дооценил потенциал — вход в позицию оправдан." },
+                    sell: { correct: false, title: "❌ Ошибка", text: "Продажа была бы оправдана при отсутствии подтверждающих контрактов. Здесь — конкретные сделки, а не анонс-обещание. Новость фундаментально позитивная, а волатильность после релиза обычно снижается." },
+                    wait: { correct: false, partial: true, title: "🟡 Частично верно", text: "Ожидание может быть оправдано, если вы — консервативный инвестор. Однако аналитика показывает, что 78% подобных новостей дают +12–20% за 5 дней. Упущенная выгода в данном случае превышает риски." }
+                }
+            },
+            {
+                id: 2,
+                headline: "Тындекс заключает партнёрство с «Роскосмосом» на разработку ИИ для планирования миссий",
+                news: "Совместный проект предполагает создание системы прогнозирования рисков космических запусков. Госконтракт оценивается в 3.2 млрд ₽. Компания усиливает позиции в high-tech госзаказе.",
+                newPrice: 950.0,
+                changePercent: 15.9,
+                date: "2025-10-28",
+                correctAction: "buy",
+                analysis: {
+                    buy: { correct: true, title: "✅ Верно!", text: "Контракт с госкорпорацией — надёжный денежный поток на 3+ года. Тындекс выходит в high-margin сегмент (space-tech), что повышает мультипликаторы. Рынок недооценивает потенциал кросс-продаж в другие госструктуры." },
+                    sell: { correct: false, title: "❌ Ошибка", text: "Продажа имеет смысл при риске невыполнения контракта. Здесь — предоплата, этапность, и «Роскосмос» уже протестировал MVP. Вероятность срыва <5% по данным нейросети." },
+                    wait: { correct: false, partial: true, title: "🟡 Частично верно", text: "Можно подождать первого транша (ожидается через 45 дней), но исторически цена растёт сразу после подписания. В 9 из 10 похожих кейсов — рост +14% за неделю." }
+                }
+            },
+            {
+                id: 3,
+                headline: "Регулятор начал проверку по жалобам на «Тындекс.Авто» — ИИ для ДТП-оценки",
+                news: "ФАС инициировала анализ алгоритмов расчёта ущерба, после жалоб страховых компаний на занижение выплат. Тындекс заявил, что модель прозрачна и прошла независимый аудит. Рынок отреагировал осторожно.",
+                newPrice: 890.0,
+                changePercent: -6.3,
+                date: "2025-11-14",
+                correctAction: "wait",
+                analysis: {
+                    buy: { correct: false, title: "❌ Рискованно", text: "Ранний вход может привести к просадке: в 68% случаев проверка длится 3–6 месяцев, и цена корректируется ещё на −5…−10%. Нет гарантии, что аудит будет принят ФАС." },
+                    sell: { correct: false, title: "❌ Преждевременно", text: "Продажа усугубит убытки, если проверка завершится положительно (как в 52% похожих кейсов). Лучше зафиксировать позицию, только если появятся признаки штрафа >5% выручки." },
+                    wait: { correct: true, title: "✅ Верно!", text: "Ожидание — оптимальная стратегия. Нейросеть рекомендует мониторить: 1) дату заседания ФАС, 2) комментарии ЦБ (регулятор страховщиков), 3) изменение доли рынка. Решение через 2–4 недели." }
+                }
+            },
+            {
+                id: 4,
+                headline: "Тындекс устанавливает рекорды прибыли и растёт на рынке",
+                news: "Благодаря успешному запуску нового продукта и рекордной квартальной прибыли, акции компании Тындекс демонстрируют уверенный рост. Финансовая устойчивость и инновационные решения укрепляют позиции компании на рынке.",
+                newPrice: 1050.0,
+                changePercent: 18.0,
+                date: "2025-11-29",
+                correctAction: "buy",
+                analysis: {
+                    buy: { correct: true, title: "✅ Верно!", text: "Рост прибыли при росте маржинальности (EBITDA +22% YoY) — редкий и сильный сигнал. Новость подтверждена отчётностью, а не ожиданиями. Технически: breakout из консолидации — подтверждён объёмами." },
+                    sell: { correct: false, title: "❌ Продажа на пике?", text: "Тактика «купить слух, продать факт» здесь не работает: 1) рост опережает рыночные ожидания на 11%, 2) руководство повысило guidance. Вероятность продолжения тренда — 83%." },
+                    wait: { correct: false, partial: true, title: "🟡 Упущенная возможность", text: "Коррекция маловероятна: объёмы роста в 3.5× среднего, short-interest снизился на 18%. В 8 из 10 подобных отчётов — продолжение роста в течение 2–3 недель." }
+                }
+            },
+            {
+                id: 5,
+                headline: "Тындекс запускает ИИ-тренажёр для финансовых аналитиков — open beta",
+                news: "Новый продукт позволяет моделировать кризисные сценарии на основе реальных макроэкономических данных. Уже 27 университетов подключились к пилоту. Это первый шаг к B2B-направлению в edtech.",
+                newPrice: 1120.0,
+                changePercent: 6.7,
+                date: "2025-12-05",
+                correctAction: "wait",
+                analysis: {
+                    buy: { correct: false, title: "❌ Слишком рано", text: "B2B-продукт ещё в бете. До выручки — минимум 6 месяцев. Рынок мог отреагировать на «хайп», но без подтверждения конверсии (оплаченные лицензии) рост неустойчив." },
+                    sell: { correct: false, title: "❌ Неоправданная реакция", text: "Продукт стратегически важен: он использует core-технологии Тындекса (NLP, time-series forecasting). Даже при провале — никаких прямых убытков. Риск минимален." },
+                    wait: { correct: true, title: "✅ Верно!", text: "Ожидание — разумно. Нейросеть рекомендует отслеживать: 1) конверсию пилота в продажи (через 90 дней), 2) расширение на корпоративный сектор. Решение — после первого контракта." }
+                }
+            },
+            {
+                id: 6,
+                headline: "Кибератака на инфраструктуру Тындекс: 4 часа простоя API",
+                news: "Группа 'DarkLogic' взяла на себя ответственность за DDoS-атаку. Утечки данных не зафиксировано, но репутационные риски и перебои в работе сервисов вызвали отток клиентов из сегмента SMB.",
+                newPrice: 985.0,
+                changePercent: -12.1,
+                date: "2025-12-08",
+                correctAction: "buy",
+                analysis: {
+                    buy: { correct: true, title: "✅ Верно!", text: "Атака — технический шок, не фундаментальный. Инфраструктура восстановлена за 4 часа, данных не украдено. Исторически подобные события дают −10…−15%, после чего — отскок +18% за 2 недели (как в Mail.Ru, 2023)." },
+                    sell: { correct: false, title: "❌ Паника", text: "Продажа усиливает просадку. SMB-сегмент — лишь 8% выручки. Основные клиенты (гос, enterprise) не пострадали. Нет признаков повторной атаки (уровень защиты повышен)." },
+                    wait: { correct: false, partial: true, title: "🟡 Пропустите отскок", text: "Цена уже отработала новость (падение −12%). Лучшее окно для входа — первые 24 часа после события. В 75% случаев отскок начинается в течение 48 часов." }
+                }
+            },
+            {
+                id: 7,
+                headline: "Тындекс объявляет о создании совместного ИИ-хаба с Сколково и МФТИ",
+                news: "Инвестиции в размере 2.5 млрд ₽ пойдут на создание исследовательского центра по безопасному ИИ. Прогнозируется рост R&D-выручки на 35% к 2027 г. Аналитики повысили целевую цену до 1300 ₽.",
+                newPrice: 1210.0,
+                changePercent: 22.8,
+                date: "2025-12-15",
+                correctAction: "buy",
+                analysis: {
+                    buy: { correct: true, title: "✅ Верно!", text: "Инвестиции частично субсидированы (50% — гранты), а R&D-выручка — высокомаржинальна (+45% EBITDA). Это сигнал о переходе в «режим роста», а не только поддержания. Целевая цена 1300 ₽ — консервативна." },
+                    sell: { correct: false, title: "❌ Не путайте инвестиции с убытками", text: "2.5 млрд ₽ — это 3.2% капитализации, не угроза ликвидности. Деньги пойдут в CapEx, не в операционные расходы. Такие проекты обычно повышают EV/EBITDA на 0.8–1.2×." },
+                    wait: { correct: false, partial: true, title: "🟡 Рынок уже в движении", text: "Цена выросла, но не достигла целевой (1300 ₽). До 2027 г. — потенциал +24%. Лучшее время для входа — после анонса, когда рост подтверждён объёмами (как сейчас)." }
+                }
+            }
+        ];
+
+        // === STORAGE ===
+        const STORAGE_KEY = 'tyndex_tasks_progress_v2';
+        
+        function loadProgress() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : {};
+        }
+
+        function saveProgress(progress) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+        }
+
+        function getTaskStatus(taskId) {
+            const progress = loadProgress();
+            return progress[taskId] || null;
+        }
+
+        function setTaskStatus(taskId, status, action) {
+            const progress = loadProgress();
+            progress[taskId] = {
+                status: status, // 'correct', 'partial', 'incorrect'
+                action: action,
+                timestamp: new Date().toISOString()
+            };
+            saveProgress(progress);
+            updateUI();
+        }
+
+        function updateUI() {
+            const progress = loadProgress();
+            const completed = Object.keys(progress).length;
+            const total = tasks.length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('progressInfo').textContent = `${completed}/${total} решено`;
+            document.getElementById('progressFill').style.width = `${percent}%`;
+
+            // Обновляем бейджи
+            document.querySelectorAll('.task-card').forEach(card => {
+                const id = parseInt(card.dataset.taskId);
+                const status = getTaskStatus(id);
+                let badge = card.querySelector('.card-badge');
+                if (badge) badge.remove();
+
+                if (status) {
+                    const badgeEl = document.createElement('div');
+                    badgeEl.className = `card-badge badge-${status.status}`;
+                    badgeEl.innerHTML = status.status === 'correct' ? '✓' : 
+                                       status.status === 'partial' ? '!' : '✗';
+                    card.appendChild(badgeEl);
+                }
+            });
+        }
+
+        // === DOM ===
+        const listView = document.getElementById('list-view');
+        const detailView = document.getElementById('detail-view');
+        const tasksContainer = document.getElementById('tasksContainer');
+        const btnBackFromDetail = document.getElementById('btnBackFromDetail');
+        const btnPrevDetail = document.getElementById('btnPrevDetail');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnNextDetail = document.getElementById('btnNextDetail');
+
+        let currentTaskIndex = 0;
+        let selectedAction = null;
+
+        // Рендер списка
+        function renderTaskList() {
+            tasksContainer.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const isPositive = task.changePercent >= 0;
+                const card = document.createElement('div');
+                card.className = 'task-card';
+                card.dataset.taskId = task.id;
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span><i class="fas fa-brain"></i> Задание #${task.id}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">${task.headline}</div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-calendar-day"></i> ${task.date}</span>
+                            <span class="price-change ${isPositive ? 'pos' : 'neg'}">
+                                ${isPositive ? '↑' : '↓'} ${Math.abs(task.changePercent).toFixed(1)}%
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                const status = getTaskStatus(task.id);
+                if (status) {
+                    const badge = document.createElement('div');
+                    badge.className = `card-badge badge-${status.status}`;
+                    badge.innerHTML = status.status === 'correct' ? '✓' : 
+                                     status.status === 'partial' ? '!' : '✗';
+                    card.appendChild(badge);
+                }
+
+                card.onclick = () => showTask(index);
+                tasksContainer.appendChild(card);
+            });
+        }
+
+        // Отображение задания (с учётом статуса)
+        function showTask(index) {
+            currentTaskIndex = index;
+            const task = tasks[index];
+            const status = getTaskStatus(task.id);
+
+            document.getElementById('detailTitle').textContent = `Задание #${task.id}`;
+            document.getElementById('detailNews').textContent = task.news;
+
+            const decisionSection = document.getElementById('decisionSection');
+
+            if (status) {
+                // Уже решено — показываем историю
+                const analysis = task.analysis[status.action];
+                const isCorrect = analysis.correct;
+                const isPartial = analysis.partial;
+                let resultClass = 'incorrect';
+                let icon = '❌';
+                if (isCorrect) { resultClass = 'correct'; icon = '✅'; }
+                else if (isPartial) { resultClass = 'partial'; icon = '⚠️'; }
+
+                decisionSection.innerHTML = `
+                    <div class="history-box">
+                        <h3><i class="fas fa-history"></i> Ваш ответ от ${new Date(status.timestamp).toLocaleDateString('ru-RU')}</h3>
+                        <div><strong>Выбор:</strong> 
+                            ${status.action === 'buy' ? '📈 Покупать' : 
+                              status.action === 'sell' ? '📉 Продавать' : '⏸️ Ждать'}
+                        </div>
+                        <div class="result-icon ${resultClass}">${icon}</div>
+                        <div class="result-title ${resultClass}">${analysis.title}</div>
+                    </div>
+
+                    <div class="analysis-box">
+                        <h4>Аналитика нейросети:</h4>
+                        <p>${analysis.text}</p>
+                    </div>
+
+                    <div class="news-box" style="background:#e8f5e9;border-color:#4caf50">
+                        <strong>Факт:</strong> Цена изменилась на 
+                        <strong>${task.changePercent > 0 ? '+' : ''}${task.changePercent.toFixed(1)}%</strong> 
+                        → <strong>${task.newPrice} ₽</strong> (${task.date})
+                    </div>
+                `;
+
+                // Показываем кнопки навигации
+                btnSubmit.style.display = 'none';
+                btnNextDetail.style.display = (index < tasks.length - 1) ? 'inline-block' : 'none';
+                btnPrevDetail.style.display = (index > 0) ? 'inline-block' : 'none';
+
+            } else {
+                // Не решено — показываем выбор
+                decisionSection.innerHTML = `
+                    <div class="decision-box">
+                        <h3>Ваше решение</h3>
+                        <p>Как вы поступите после публикации новости?</p>
+                        <div class="options">
+                            <button class="option-btn" data-action="buy">📈 Покупать</button>
+                            <button class="option-btn" data-action="sell">📉 Продавать</button>
+                            <button class="option-btn" data-action="wait">⏸️ Ждать</button>
+                        </div>
+                        <p><small>Выберите один вариант</small></p>
+                    </div>
+                `;
+
+                // Активируем кнопки
+                document.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.onclick = function() {
+                        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                        this.classList.add('selected');
+                        selectedAction = this.dataset.action;
+                        btnSubmit.disabled = false;
+                    };
+                });
+
+                btnSubmit.style.display = 'inline-block';
+                btnSubmit.disabled = true;
+                btnNextDetail.style.display = 'none';
+                btnPrevDetail.style.display = (index > 0) ? 'inline-block' : 'none';
+            }
+
+            listView.style.display = 'none';
+            detailView.style.display = 'block';
+        }
+
+        // Сабмит
+        btnSubmit.onclick = function() {
+            if (!selectedAction) return;
+            const task = tasks[currentTaskIndex];
+            const analysis = task.analysis[selectedAction];
+            const isCorrect = analysis.correct;
+            const isPartial = analysis.partial;
+
+            let status = 'incorrect';
+            if (isCorrect) status = 'correct';
+            else if (isPartial) status = 'partial';
+
+            setTaskStatus(task.id, status, selectedAction);
+            showTask(currentTaskIndex); // Перерисуем как "уже решено"
+        };
+
+        // Навигация
+        btnBackFromDetail.onclick = () => {
+            detailView.style.display = 'none';
+            listView.style.display = 'block';
+        };
+
+        btnPrevDetail.onclick = () => {
+            if (currentTaskIndex > 0) {
+                showTask(currentTaskIndex - 1);
+            }
+        };
+
+        btnNextDetail.onclick = () => {
+            if (currentTaskIndex < tasks.length - 1) {
+                showTask(currentTaskIndex + 1);
+            }
+        };
+
+        // Сброс
+        document.getElementById('btnReset').onclick = function() {
+            if (confirm('Сбросить весь прогресс?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                updateUI();
+                renderTaskList();
+            }
+        };
+
+        // Инициализация
+        renderTaskList();
+        updateUI();
+    </script>
+</body>
+</html>
